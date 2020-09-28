@@ -26,5 +26,10 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = AdapterFactory.class)
 @SlingAdapter(adaptables = SlingHttpServletRequest.class, adapters = Resource.class)
 @AdapterDeprecated // Just use request.getResource()
-public class DeprecatedAdapterFactory extends AbstractNoOpAdapterFactory {
+public class DeprecatedAdapterFactory implements AdapterFactory {
+    @Override
+    @SuppressWarnings({"squid:S00119", "unchecked"})
+    public <AdapterType> AdapterType getAdapter(final Object adaptable, final Class<AdapterType> type) {
+        return (AdapterType)((SlingHttpServletRequest)adaptable).getResource();
+    }
 }
