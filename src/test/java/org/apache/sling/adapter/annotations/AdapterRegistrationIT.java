@@ -55,8 +55,9 @@ public class AdapterRegistrationIT implements AdapterAnnotationsIT {
     public static void setUpAdaptions() throws ClientException, InterruptedException, TimeoutException, URISyntaxException, IOException {
         try (final OsgiConsoleClient client = AppSlingClient.newSlingClient().adaptTo(OsgiConsoleClient.class)) {
             registeredAdaptions = new HashSet<>();
-            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(
-                    client.doGet("/system/console/services.json").getContent()));
+            final String servicesString = client.doGet("/system/console/services.json").getContent();
+            System.err.println(servicesString);
+            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(servicesString));
             for (final ServiceInfo serviceInfo : services.forType(Adaption.class.getName())) {
                 final String content = client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent();
                 try {
