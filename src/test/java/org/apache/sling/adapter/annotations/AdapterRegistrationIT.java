@@ -55,16 +55,15 @@ public class AdapterRegistrationIT implements AdapterAnnotationsIT {
     public static void setUpAdaptions() throws ClientException, InterruptedException, TimeoutException, URISyntaxException, IOException {
         try (final OsgiConsoleClient client = AppSlingClient.newSlingClient().adaptTo(OsgiConsoleClient.class)) {
             registeredAdaptions = new HashSet<>();
-            final String servicesString = client.doGet("/system/console/services.json").getContent();
-            System.err.println(servicesString);
-            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(servicesString));
+            final String servicesJsonString = client.doGet("/system/console/services.json").getContent();
+            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(servicesJsonString));
             for (final ServiceInfo serviceInfo : services.forType(Adaption.class.getName())) {
-                final String content = client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent();
+                final String serviceJsonString = client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent();
                 try {
-                    final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(content);
+                    final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(serviceJsonString);
                     registeredAdaptions.add(Util.getNonDynamicPropertiesForService(serviceJson));
                 } catch (final ClientException e) {
-                    System.err.println("Unable to find proper JSON content for " + content + " - skipping.");
+                    System.err.println("Unable to find proper JSON content for " + serviceJsonString + " - skipping.");
                     e.printStackTrace(System.err);
                 }
             }
