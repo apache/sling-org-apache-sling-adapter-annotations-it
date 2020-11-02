@@ -58,9 +58,14 @@ public class AdapterRegistrationIT implements AdapterAnnotationsIT {
             final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(
                     client.doGet("/system/console/services.json").getContent()));
             for (final ServiceInfo serviceInfo : services.forType(Adaption.class.getName())) {
-                final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(
-                        client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent());
-                registeredAdaptions.add(Util.getNonDynamicPropertiesForService(serviceJson));
+                final String content = client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent();
+                try {
+                    final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(content);
+                    registeredAdaptions.add(Util.getNonDynamicPropertiesForService(serviceJson));
+                } catch (final ClientException e) {
+                    System.err.println("Unable to find proper JSON content for " + content + " - skipping.");
+                    e.printStackTrace(System.err);
+                }
             }
         }
     }
