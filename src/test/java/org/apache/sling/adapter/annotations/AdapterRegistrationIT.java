@@ -55,12 +55,17 @@ public class AdapterRegistrationIT implements AdapterAnnotationsIT {
     public static void setUpAdaptions() throws ClientException, InterruptedException, TimeoutException, URISyntaxException, IOException {
         try (final OsgiConsoleClient client = AppSlingClient.newSlingClient().adaptTo(OsgiConsoleClient.class)) {
             registeredAdaptions = new HashSet<>();
-            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(
-                    client.doGet("/system/console/services.json").getContent()));
+            final String servicesJsonString = client.doGet("/system/console/services.json").getContent();
+            final ServicesInfo services = new ServicesInfo(JsonUtils.getJsonNodeFromString(servicesJsonString));
             for (final ServiceInfo serviceInfo : services.forType(Adaption.class.getName())) {
-                final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(
-                        client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent());
-                registeredAdaptions.add(Util.getNonDynamicPropertiesForService(serviceJson));
+                final String serviceJsonString = client.doGet("/system/console/services/" + serviceInfo.getId() + ".json").getContent();
+                try {
+                    final JsonNode serviceJson = JsonUtils.getJsonNodeFromString(serviceJsonString);
+                    registeredAdaptions.add(Util.getNonDynamicPropertiesForService(serviceJson));
+                } catch (final ClientException e) {
+                    System.err.println("Unable to find proper JSON content for " + serviceJsonString + " - skipping.");
+                    e.printStackTrace(System.err);
+                }
             }
         }
     }
